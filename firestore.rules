@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required, immutable)
+    //   - displayName: string (optional, max 100 chars)
+    //   - totalPositive: number (required)
+    //   - totalNegative: number (required)
+    //   - netScore: number (required, must equal totalPositive - totalNegative)
+    //
+    // Collection: matches
+    // Document ID: {matchId}
+    // Fields:
+    //   - hostId: string
+    //   - name: string
+    //   - inviteCode: string
+    //   - createdAt: number
+    //   - status: string
+    //   - playerIds: list of strings
+    //
+    // Collection: matches/{matchId}/players
+    // Document ID: {playerId}
+    // Fields:
+    //   - uid: string
+    //   - displayName: string
+    //   - score: number
+    //   - fumbles: number
+    //   - cleans: number
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+    
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+    
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+    
+    function isValidUserStats() {
+      return hasOnlyAllowedFields(['uid', 'displayName', 'totalPositive', 'totalNegative', 'netScore']) &&
+             hasRequiredFields(['uid', 'totalPositive', 'totalNegative', 'netScore']) &&
+             request.resource.data.uid is string &&
+             request.resource.data.uid.size() > 0 && request.resource.data.uid.size() < 100 &&
+             (!('displayName' in request.resource.data) || (request.resource.data.displayName is string && request.resource.data.displayName.size() < 100)) &&
+             request.resource.data.totalPositive is number &&
+             request.resource.data.totalNegative is number &&
+             request.resource.data.netScore is number &&
+             request.resource.data.netScore == request.resource.data.totalPositive - request.resource.data.totalNegative;
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated(); // Allow reading for global leaderboards
+      allow create: if isOwner(userId) && isValidUserStats() && uidUnchanged();
+      allow update: if isOwner(userId) && isValidUserStats() && uidNotModified();
+    }
+
+    match /matches/{matchId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                    hasRequiredFields(['hostId', 'name', 'inviteCode', 'createdAt', 'status', 'playerIds']) &&
+                    request.resource.data.hostId == request.auth.uid;
+      allow update: if isAuthenticated();
+    }
+
+    match /matches/{matchId}/players/{playerId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                    (request.auth.uid == playerId || (get(/databases/$(database)/documents/matches/$(matchId)).data.hostId == request.auth.uid && request.resource.data.isLocal == true)) &&
+                    hasRequiredFields(['uid', 'displayName', 'score', 'fumbles', 'cleans']);
+      allow update: if isAuthenticated() && 
+                    (request.auth.uid == playerId || (get(/databases/$(database)/documents/matches/$(matchId)).data.hostId == request.auth.uid && resource.data.isLocal == true));
+    }
+
+    match /fieldRooms/{roomId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                    hasRequiredFields(['roomCode', 'bowlerId', 'fieldPositions', 'createdAt']) &&
+                    request.resource.data.bowlerId == request.auth.uid;
+      allow update: if isAuthenticated() &&
+                    (request.auth.uid == resource.data.bowlerId || request.auth.uid == request.resource.data.batterId);
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "entities": {
+    "UserStats": {
+      "title": "UserStats",
+      "description": "Stores the user's overall Tiddles statistics across all matches.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's ID"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name"
+        },
+        "totalPositive": {
+          "type": "number",
+          "description": "Total positive tiddles (fumbles/drops)"
+        },
+        "totalNegative": {
+          "type": "number",
+          "description": "Total negative tiddles (cleans/catches)"
+        },
+        "netScore": {
+          "type": "number",
+          "description": "Net score (totalPositive - totalNegative)"
+        }
+      },
+      "required": ["uid", "totalPositive", "totalNegative", "netScore"]
+    },
+    "Match": {
+      "title": "Match",
+      "description": "A Tiddles match session",
+      "type": "object",
+      "properties": {
+        "hostId": { "type": "string" },
+        "name": { "type": "string" },
+        "inviteCode": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "status": { "type": "string" },
+        "playerIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["hostId", "name", "inviteCode", "createdAt", "status", "playerIds"]
+    },
+    "MatchPlayer": {
+      "title": "MatchPlayer",
+      "description": "A player's score within a specific match",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "score": { "type": "number" },
+        "fumbles": { "type": "number" },
+        "cleans": { "type": "number" }
+      },
+      "required": ["uid", "displayName", "score", "fumbles", "cleans"]
+    },
+    "FieldRoom": {
+      "title": "FieldRoom",
+      "description": "A room for field visualization between a bowler and a batter",
+      "type": "object",
+      "properties": {
+        "roomCode": { "type": "string" },
+        "bowlerId": { "type": "string" },
+        "batterId": { "type": "string" },
+        "fieldPositions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "label": { "type": "string" }
+            },
+            "required": ["id", "x", "y", "label"]
+          }
+        },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["roomCode", "bowlerId", "fieldPositions", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/fieldRooms/{roomId}": {
+      "schema": {
+        "$ref": "#/entities/FieldRoom"
+      },
+      "description": "Field visualization rooms"
+    },
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserStats"
+      },
+      "description": "User statistics documents"
+    },
+    "/matches/{matchId}": {
+      "schema": {
+        "$ref": "#/entities/Match"
+      },
+      "description": "Match sessions"
+    },
+    "/matches/{matchId}/players/{playerId}": {
+      "schema": {
+        "$ref": "#/entities/MatchPlayer"
+      },
+      "description": "Players in a match"
+    }
+  }
+}
