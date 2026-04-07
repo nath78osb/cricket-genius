@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-background: hsl(216 50% 8%);
+  --color-foreground: hsl(210 20% 90%);
+
+  --color-card: hsl(216 45% 12%);
+  --color-card-foreground: hsl(210 20% 90%);
+
+  --color-popover: hsl(216 45% 12%);
+  --color-popover-foreground: hsl(210 20% 90%);
+
+  --color-primary: hsl(148 55% 36%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(216 35% 18%);
+  --color-secondary-foreground: hsl(210 20% 85%);
+
+  --color-muted: hsl(216 30% 15%);
+  --color-muted-foreground: hsl(215 15% 55%);
+
+  --color-accent: hsl(38 90% 55%);
+  --color-accent-foreground: hsl(216 50% 8%);
+
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  --color-border: hsl(216 30% 20%);
+  --color-input: hsl(216 30% 20%);
+  --color-ring: hsl(148 55% 36%);
+
+  --radius-lg: 0.75rem;
+
+  --color-field-green: hsl(148 60% 28%);
+  --color-field-green-light: hsl(148 50% 38%);
+  --color-pitch-tan: hsl(38 40% 55%);
+  --color-fielder: hsl(38 90% 55%);
+  --color-fielder-glow: hsl(38 90% 65%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .font-mono-data {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .field-shadow {
+    box-shadow: 0 0 60px hsl(148 60% 28% / 0.3), 0 0 120px hsl(148 60% 28% / 0.1);
+  }
+
+  .fielder-glow {
+    box-shadow: 0 0 8px hsl(38 90% 65% / 0.8), 0 0 20px hsl(38 90% 65% / 0.4);
+  }
+
+  .tactical-grid {
+    background-image: 
+      linear-gradient(hsl(216 30% 20% / 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(216 30% 20% / 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
